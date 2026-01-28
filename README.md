@@ -118,17 +118,30 @@ npm start
 
 #### Mobile Apps
 
-Build Android APK:
+**Build Android APK (Recommended Method):**
+
+Using the build script:
 ```bash
-cd mobile
-expo build:android
+./build-android.sh
 ```
 
-Build iOS IPA:
+Or manually:
 ```bash
 cd mobile
-expo build:ios
+npm run build:android
+# or for production
+npm run build:android:production
 ```
+
+This uses EAS Build (cloud-based) and creates an APK file you can install on any Android device. See [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md) for detailed instructions.
+
+**Build iOS IPA:**
+```bash
+cd mobile
+eas build --platform ios --profile preview
+```
+
+Requires an Apple Developer account.
 
 #### Desktop App
 

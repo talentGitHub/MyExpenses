@@ -76,7 +76,49 @@ cd mobile
 npm run ios
 ```
 
-## Step 4: Using the App
+## Step 5: Building for Production
+
+### Build Android APK
+
+The easiest way to build an APK:
+
+```bash
+./build-android.sh
+```
+
+Or manually:
+
+```bash
+cd mobile
+npm run build:android
+```
+
+This will:
+1. Use EAS Build (Expo's cloud build service)
+2. Create an APK file in about 10-20 minutes
+3. Provide a download link when complete
+
+**Detailed instructions:** See [ANDROID_BUILD_GUIDE.md](ANDROID_BUILD_GUIDE.md)
+
+### Build Windows Desktop Installer
+
+```bash
+cd desktop
+npm run build:win
+```
+
+The installer will be in `desktop/dist/MyExpenses Setup.exe`
+
+### Build iOS App
+
+```bash
+cd mobile
+eas build --platform ios --profile preview
+```
+
+Requires an Apple Developer account.
+
+## Step 6: Using the App
 
 ### Adding Your First Expense
 
@@ -98,31 +140,6 @@ npm run ios
 3. Open the app on another device and sync there too
 
 **Note:** Currently using mock sync. For real sync, you'll need to set up a backend API.
-
-## Step 5: Building for Production
-
-### Build Android APK
-
-```bash
-cd mobile
-eas build --platform android --profile preview
-```
-
-### Build iOS App
-
-```bash
-cd mobile
-eas build --platform ios --profile preview
-```
-
-### Build Windows Desktop Installer
-
-```bash
-cd desktop
-npm run build:win
-```
-
-The installer will be in `desktop/dist/MyExpenses Setup.exe`
 
 ## Troubleshooting
 
