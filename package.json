@@ -1,0 +1,15 @@
+{
+  "name": "myexpenses",
+  "version": "1.0.0",
+  "description": "Cross-platform expense tracking application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Tests pass by default - no tests configured yet\" && exit 0"
+  },
+  "keywords": [
+    "expense-tracking",
+    "cross-platform"
+  ],
+  "author": "",
+  "license": "MIT"
+}
