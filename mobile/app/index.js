@@ -129,13 +129,11 @@ export default function Index() {
   }, [expenseManager, refreshExpenseData]);
 
   // Memoize formatCurrency to avoid recreation
-  const formatCurrency = useMemo(() => {
-    return (amount) => {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD'
-      }).format(amount);
-    };
+  const formatCurrency = useCallback((amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
   }, []);
 
   if (!expenseManager) {

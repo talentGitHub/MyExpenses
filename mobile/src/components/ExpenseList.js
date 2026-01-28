@@ -48,16 +48,13 @@ const ExpenseList = React.memo(({ expenses, onDelete }) => {
     </View>
   ), [formatDate, formatCurrency, onDelete]);
 
-  // Memoize empty state to avoid unnecessary re-renders
-  const emptyState = useMemo(() => (
-    <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>No expenses recorded yet</Text>
-      <Text style={styles.emptySubtext}>Add your first expense above</Text>
-    </View>
-  ), []);
-
   if (expenses.length === 0) {
-    return emptyState;
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No expenses recorded yet</Text>
+        <Text style={styles.emptySubtext}>Add your first expense above</Text>
+      </View>
+    );
   }
 
   return (

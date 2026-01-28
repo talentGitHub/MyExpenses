@@ -24,6 +24,7 @@ export class ExpenseManager {
     this.sync = syncAdapter;
     this.expenses = [];
     this.STORAGE_KEY = 'myexpenses_data';
+    this.pendingSyncs = []; // Track failed syncs for retry
   }
 
   async initialize() {
@@ -61,6 +62,8 @@ export class ExpenseManager {
     if (this.sync) {
       this.sync.syncExpense(expense).catch(error => {
         console.error('Background sync error:', error);
+        // Track failed sync for potential retry
+        this.pendingSyncs.push({ type: 'add', data: expense, timestamp: Date.now() });
       });
     }
     
@@ -77,8 +80,11 @@ export class ExpenseManager {
       
       // Queue sync operation without blocking
       if (this.sync) {
-        this.sync.syncExpense(this.expenses[index]).catch(error => {
+        const updatedExpense = this.expenses[index];
+        this.sync.syncExpense(updatedExpense).catch(error => {
           console.error('Background sync error:', error);
+          // Track failed sync for potential retry
+          this.pendingSyncs.push({ type: 'update', data: updatedExpense, timestamp: Date.now() });
         });
       }
       
@@ -97,8 +103,44 @@ export class ExpenseManager {
     if (this.sync) {
       this.sync.deleteExpense(id).catch(error => {
         console.error('Background sync error:', error);
+        // Track failed sync for potential retry
+        this.pendingSyncs.push({ type: 'delete', data: { id }, timestamp: Date.now() });
       });
     }
+  }
+
+  // Method to retry pending syncs
+  async retryPendingSyncs() {
+    if (!this.sync || this.pendingSyncs.length === 0) {
+      return { success: 0, failed: 0 };
+    }
+
+    let success = 0;
+    let failed = 0;
+    const remainingSyncs = [];
+
+    for (const pendingSync of this.pendingSyncs) {
+      try {
+        if (pendingSync.type === 'add' || pendingSync.type === 'update') {
+          await this.sync.syncExpense(pendingSync.data);
+        } else if (pendingSync.type === 'delete') {
+          await this.sync.deleteExpense(pendingSync.data.id);
+        }
+        success++;
+      } catch (error) {
+        console.error('Retry sync failed:', error);
+        remainingSyncs.push(pendingSync);
+        failed++;
+      }
+    }
+
+    this.pendingSyncs = remainingSyncs;
+    return { success, failed, remaining: remainingSyncs.length };
+  }
+
+  // Get count of pending syncs
+  getPendingSyncCount() {
+    return this.pendingSyncs.length;
   }
 
   getExpenses(filters = {}) {
@@ -124,8 +166,22 @@ export class ExpenseManager {
     if (filtered.length > 0) {
       const dateCache = new Map();
       return filtered.sort((a, b) => {
-        const aTime = dateCache.get(a.id) || (dateCache.set(a.id, new Date(a.date).getTime()), dateCache.get(a.id));
-        const bTime = dateCache.get(b.id) || (dateCache.set(b.id, new Date(b.date).getTime()), dateCache.get(b.id));
+        let aTime;
+        if (dateCache.has(a.id)) {
+          aTime = dateCache.get(a.id);
+        } else {
+          aTime = new Date(a.date).getTime();
+          dateCache.set(a.id, aTime);
+        }
+        
+        let bTime;
+        if (dateCache.has(b.id)) {
+          bTime = dateCache.get(b.id);
+        } else {
+          bTime = new Date(b.date).getTime();
+          dateCache.set(b.id, bTime);
+        }
+        
         return bTime - aTime;
       });
     }
