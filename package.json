@@ -4,7 +4,7 @@
   "description": "Cross-platform expense tracking application",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No tests specified yet\" && exit 0"
+    "test": "echo \"Tests pass by default - no tests configured yet\" && exit 0"
   },
   "keywords": [
     "expense-tracking",

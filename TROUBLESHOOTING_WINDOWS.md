@@ -7,7 +7,7 @@ When running npm commands on Windows PowerShell, you may encounter this error:
 ```
 npm : File C:\Program Files\nodejs\npm.ps1 cannot be loaded. The file C:\Program Files\nodejs\npm.ps1 is not digitally
 signed. You cannot run this script on the current system. For more information about running scripts and setting
-execution policy, see about_Execution_Policies at https:/go.microsoft.com/fwlink/?LinkID=135170.
+execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170.
 ```
 
 ## Solution
@@ -39,14 +39,6 @@ Run npm with execution policy bypass for a single command:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -Command "npm install"
-```
-
-### Option 4: Use npx
-
-If you have npx available, it can help bypass some PowerShell issues:
-
-```powershell
-npx npm install
 ```
 
 ## For CI/CD

@@ -7,7 +7,7 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     
     steps:
@@ -18,19 +18,25 @@ jobs:
       with:
         node-version: '18'
     
-    - name: Configure PowerShell Execution Policy
-      shell: powershell
-      run: |
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-        Write-Host "PowerShell Execution Policy set to RemoteSigned"
-        Get-ExecutionPolicy -List
-    
     - name: Install dependencies
-      shell: powershell
-      run: |
-        npm install
+      run: npm install
     
     - name: Run tests
-      shell: powershell
-      run: |
-        npm test
+      run: npm test
+  
+  build-ubuntu:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Run tests
+      run: npm test
