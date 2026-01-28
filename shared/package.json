@@ -1,0 +1,13 @@
+{
+  "name": "@myexpenses/shared",
+  "version": "1.0.0",
+  "description": "Shared business logic for MyExpenses",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"No tests specified yet\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

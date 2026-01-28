@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyExpenses - Desktop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>MyExpenses</h1>
+      <button id="syncBtn" class="btn btn-primary">🔄 Sync</button>
+    </header>
+
+    <div class="summary-card">
+      <div class="summary-label">Total Expenses</div>
+      <div class="summary-amount" id="totalAmount">$0.00</div>
+      <div class="summary-count"><span id="transactionCount">0</span> transactions</div>
+    </div>
+
+    <div class="main-content">
+      <div class="expense-form">
+        <h2>Add New Expense</h2>
+        <form id="expenseForm">
+          <div class="form-group">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" step="0.01" min="0" required placeholder="0.00">
+          </div>
+
+          <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" required>
+              <!-- Options will be populated by JavaScript -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" rows="3" placeholder="Enter description..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="JPY">JPY (¥)</option>
+              <option value="CNY">CNY (¥)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">Add Expense</button>
+        </form>
+      </div>
+
+      <div class="expense-list">
+        <h2>Recent Expenses</h2>
+        <div id="expenseListContainer">
+          <!-- Expenses will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

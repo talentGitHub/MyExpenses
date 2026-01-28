@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1284" height="2778" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1284" height="2778" fill="white"/>
+  <circle cx="642" cy="1200" r="150" fill="#007AFF"/>
+  <text x="50%" y="1550" font-size="80" fill="#333333" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold">MyExpenses</text>
+  <text x="50%" y="1650" font-size="40" fill="#666666" text-anchor="middle" font-family="Arial, sans-serif">Track your expenses</text>
+</svg>
