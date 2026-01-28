@@ -69,27 +69,71 @@ function renderExpenses() {
     return;
   }
   
-  container.innerHTML = expenses.map(expense => `
-    <div class="expense-item">
-      <div class="expense-header">
-        <div class="expense-category">${expense.category}</div>
-        <div class="expense-amount">${formatCurrency(expense.amount, expense.currency)}</div>
-      </div>
-      <div class="expense-description">${expense.description || 'No description'}</div>
-      <div class="expense-footer">
-        <div class="expense-date">${formatDate(expense.date)}</div>
-        <button class="btn btn-danger" onclick="deleteExpense('${expense.id}')">Delete</button>
-      </div>
-    </div>
-  `).join('');
+  // Use DocumentFragment for better performance - builds DOM in memory first
+  const fragment = document.createDocumentFragment();
+  
+  expenses.forEach(expense => {
+    const expenseItem = document.createElement('div');
+    expenseItem.className = 'expense-item';
+    expenseItem.dataset.expenseId = expense.id;
+    
+    const expenseHeader = document.createElement('div');
+    expenseHeader.className = 'expense-header';
+    
+    const categoryDiv = document.createElement('div');
+    categoryDiv.className = 'expense-category';
+    categoryDiv.textContent = expense.category;
+    
+    const amountDiv = document.createElement('div');
+    amountDiv.className = 'expense-amount';
+    amountDiv.textContent = formatCurrency(expense.amount, expense.currency);
+    
+    expenseHeader.appendChild(categoryDiv);
+    expenseHeader.appendChild(amountDiv);
+    
+    const descriptionDiv = document.createElement('div');
+    descriptionDiv.className = 'expense-description';
+    descriptionDiv.textContent = expense.description || 'No description';
+    
+    const footerDiv = document.createElement('div');
+    footerDiv.className = 'expense-footer';
+    
+    const dateDiv = document.createElement('div');
+    dateDiv.className = 'expense-date';
+    dateDiv.textContent = formatDate(expense.date);
+    
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-danger';
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.onclick = () => deleteExpense(expense.id);
+    
+    footerDiv.appendChild(dateDiv);
+    footerDiv.appendChild(deleteBtn);
+    
+    expenseItem.appendChild(expenseHeader);
+    expenseItem.appendChild(descriptionDiv);
+    expenseItem.appendChild(footerDiv);
+    
+    fragment.appendChild(expenseItem);
+  });
+  
+  // Clear and append in one operation to minimize reflows
+  container.innerHTML = '';
+  container.appendChild(fragment);
 }
 
 function updateSummary() {
-  const totalAmount = expenseManager.getTotalExpenses();
-  const expenses = expenseManager.getExpenses();
-  
-  document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
-  document.getElementById('transactionCount').textContent = expenses.length;
+  // Use optimized method if available to avoid duplicate filtering
+  if (typeof expenseManager.getExpensesAnalysis === 'function') {
+    const { total, expenses } = expenseManager.getExpensesAnalysis();
+    document.getElementById('totalAmount').textContent = formatCurrency(total);
+    document.getElementById('transactionCount').textContent = expenses.length;
+  } else {
+    const totalAmount = expenseManager.getTotalExpenses();
+    const expenses = expenseManager.getExpenses();
+    document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
+    document.getElementById('transactionCount').textContent = expenses.length;
+  }
 }
 
 // Handle form submission

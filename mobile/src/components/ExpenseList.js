@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,24 +8,26 @@ import {
   Platform
 } from 'react-native';
 
-export default function ExpenseList({ expenses, onDelete }) {
-  const formatDate = (dateString) => {
+const ExpenseList = React.memo(({ expenses, onDelete }) => {
+  // Memoize format functions to avoid recreation on every render
+  const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
     });
-  };
+  }, []);
 
-  const formatCurrency = (amount, currency = 'USD') => {
+  const formatCurrency = useCallback((amount, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency
     }).format(amount);
-  };
+  }, []);
 
-  const renderExpenseItem = ({ item }) => (
+  // Memoize the render function to prevent recreating it on every render
+  const renderExpenseItem = useCallback(({ item }) => (
     <View style={styles.expenseItem}>
       <View style={styles.expenseHeader}>
         <Text style={styles.expenseCategory}>{item.category}</Text>
@@ -44,15 +46,18 @@ export default function ExpenseList({ expenses, onDelete }) {
         </TouchableOpacity>
       </View>
     </View>
-  );
+  ), [formatDate, formatCurrency, onDelete]);
+
+  // Memoize empty state to avoid unnecessary re-renders
+  const emptyState = useMemo(() => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>No expenses recorded yet</Text>
+      <Text style={styles.emptySubtext}>Add your first expense above</Text>
+    </View>
+  ), []);
 
   if (expenses.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>No expenses recorded yet</Text>
-        <Text style={styles.emptySubtext}>Add your first expense above</Text>
-      </View>
-    );
+    return emptyState;
   }
 
   return (
@@ -61,9 +66,18 @@ export default function ExpenseList({ expenses, onDelete }) {
       renderItem={renderExpenseItem}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.listContainer}
+      removeClippedSubviews={true}
+      maxToRenderPerBatch={10}
+      windowSize={10}
+      initialNumToRender={10}
+      updateCellsBatchingPeriod={50}
     />
   );
-}
+});
+
+ExpenseList.displayName = 'ExpenseList';
+
+export default ExpenseList;
 
 const styles = StyleSheet.create({
   listContainer: {

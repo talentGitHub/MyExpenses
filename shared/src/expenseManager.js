@@ -53,10 +53,15 @@ export class ExpenseManager {
 
   async addExpense(expense) {
     this.expenses.push(expense);
+    
+    // Save immediately, but don't wait for sync
     await this.saveExpenses();
     
+    // Queue sync operation without blocking
     if (this.sync) {
-      await this.sync.syncExpense(expense);
+      this.sync.syncExpense(expense).catch(error => {
+        console.error('Background sync error:', error);
+      });
     }
     
     return expense;
@@ -66,10 +71,15 @@ export class ExpenseManager {
     const index = this.expenses.findIndex(e => e.id === id);
     if (index !== -1) {
       this.expenses[index] = { ...this.expenses[index], ...updates, updatedAt: new Date().toISOString() };
+      
+      // Save immediately, but don't wait for sync
       await this.saveExpenses();
       
+      // Queue sync operation without blocking
       if (this.sync) {
-        await this.sync.syncExpense(this.expenses[index]);
+        this.sync.syncExpense(this.expenses[index]).catch(error => {
+          console.error('Background sync error:', error);
+        });
       }
       
       return this.expenses[index];
@@ -79,10 +89,15 @@ export class ExpenseManager {
 
   async deleteExpense(id) {
     this.expenses = this.expenses.filter(e => e.id !== id);
+    
+    // Save immediately, but don't wait for sync
     await this.saveExpenses();
     
+    // Queue sync operation without blocking
     if (this.sync) {
-      await this.sync.deleteExpense(id);
+      this.sync.deleteExpense(id).catch(error => {
+        console.error('Background sync error:', error);
+      });
     }
   }
 
@@ -93,15 +108,29 @@ export class ExpenseManager {
       filtered = filtered.filter(e => e.category === filters.category);
     }
 
-    if (filters.startDate) {
-      filtered = filtered.filter(e => new Date(e.date) >= new Date(filters.startDate));
+    // Pre-parse dates once to avoid creating Date objects in every iteration
+    const startTime = filters.startDate ? new Date(filters.startDate).getTime() : null;
+    const endTime = filters.endDate ? new Date(filters.endDate).getTime() : null;
+
+    if (startTime !== null) {
+      filtered = filtered.filter(e => new Date(e.date).getTime() >= startTime);
     }
 
-    if (filters.endDate) {
-      filtered = filtered.filter(e => new Date(e.date) <= new Date(filters.endDate));
+    if (endTime !== null) {
+      filtered = filtered.filter(e => new Date(e.date).getTime() <= endTime);
     }
 
-    return filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Cache date values for sorting to avoid repeated Date object creation
+    if (filtered.length > 0) {
+      const dateCache = new Map();
+      return filtered.sort((a, b) => {
+        const aTime = dateCache.get(a.id) || (dateCache.set(a.id, new Date(a.date).getTime()), dateCache.get(a.id));
+        const bTime = dateCache.get(b.id) || (dateCache.set(b.id, new Date(b.date).getTime()), dateCache.get(b.id));
+        return bTime - aTime;
+      });
+    }
+    
+    return filtered;
   }
 
   getTotalExpenses(filters = {}) {
@@ -121,6 +150,25 @@ export class ExpenseManager {
     });
     
     return byCategory;
+  }
+
+  // Optimized method to get both total and by-category in one pass
+  getExpensesAnalysis(filters = {}) {
+    const expenses = this.getExpenses(filters);
+    let total = 0;
+    const byCategory = {};
+    
+    expenses.forEach(expense => {
+      const amount = parseFloat(expense.amount);
+      total += amount;
+      
+      if (!byCategory[expense.category]) {
+        byCategory[expense.category] = 0;
+      }
+      byCategory[expense.category] += amount;
+    });
+    
+    return { total, byCategory, expenses };
   }
 
   async syncAll() {
