@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -46,7 +46,23 @@ export default function Index() {
     }
   };
 
-  const handleAddExpense = async (expenseData) => {
+  // Optimized refresh function to avoid multiple calls
+  const refreshExpenseData = useCallback(() => {
+    if (!expenseManager) return;
+    
+    // Use the optimized analysis method if available, fallback to separate calls
+    if (typeof expenseManager.getExpensesAnalysis === 'function') {
+      const { total, expenses: updatedExpenses } = expenseManager.getExpensesAnalysis();
+      setExpenses(updatedExpenses);
+      setTotalExpenses(total);
+    } else {
+      const updatedExpenses = expenseManager.getExpenses();
+      setExpenses(updatedExpenses);
+      setTotalExpenses(expenseManager.getTotalExpenses());
+    }
+  }, [expenseManager]);
+
+  const handleAddExpense = useCallback(async (expenseData) => {
     try {
       const expense = new Expense(
         null,
@@ -60,18 +76,16 @@ export default function Index() {
       await expenseManager.addExpense(expense.toJSON());
       
       // Refresh the list
-      const updatedExpenses = expenseManager.getExpenses();
-      setExpenses(updatedExpenses);
-      setTotalExpenses(expenseManager.getTotalExpenses());
+      refreshExpenseData();
       
       Alert.alert('Success', 'Expense added successfully');
     } catch (error) {
       console.error('Add expense error:', error);
       Alert.alert('Error', 'Failed to add expense');
     }
-  };
+  }, [expenseManager, refreshExpenseData]);
 
-  const handleDeleteExpense = async (id) => {
+  const handleDeleteExpense = useCallback(async (id) => {
     Alert.alert(
       'Delete Expense',
       'Are you sure you want to delete this expense?',
@@ -85,9 +99,7 @@ export default function Index() {
               await expenseManager.deleteExpense(id);
               
               // Refresh the list
-              const updatedExpenses = expenseManager.getExpenses();
-              setExpenses(updatedExpenses);
-              setTotalExpenses(expenseManager.getTotalExpenses());
+              refreshExpenseData();
             } catch (error) {
               console.error('Delete expense error:', error);
               Alert.alert('Error', 'Failed to delete expense');
@@ -96,16 +108,14 @@ export default function Index() {
         }
       ]
     );
-  };
+  }, [expenseManager, refreshExpenseData]);
 
-  const handleSync = async () => {
+  const handleSync = useCallback(async () => {
     setRefreshing(true);
     try {
       const success = await expenseManager.syncAll();
       if (success) {
-        const updatedExpenses = expenseManager.getExpenses();
-        setExpenses(updatedExpenses);
-        setTotalExpenses(expenseManager.getTotalExpenses());
+        refreshExpenseData();
         Alert.alert('Success', 'Data synced successfully');
       } else {
         Alert.alert('Warning', 'Sync completed with warnings');
@@ -116,14 +126,15 @@ export default function Index() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, [expenseManager, refreshExpenseData]);
 
-  const formatCurrency = (amount) => {
+  // Memoize formatCurrency to avoid recreation
+  const formatCurrency = useCallback((amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
     }).format(amount);
-  };
+  }, []);
 
   if (!expenseManager) {
     return (
