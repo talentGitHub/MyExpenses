@@ -1,0 +1,29 @@
+{
+  "name": "myexpenses",
+  "version": "1.0.0",
+  "description": "Cross-platform expense tracking application for Windows, Android, and iOS",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run mobile:start",
+    "mobile:start": "cd mobile && npm start",
+    "mobile:android": "cd mobile && npm run android",
+    "mobile:ios": "cd mobile && npm run ios",
+    "desktop:start": "cd desktop && npm start",
+    "desktop:build": "cd desktop && npm run build",
+    "test": "echo \"No tests specified yet\"",
+    "install:all": "npm install && cd mobile && npm install && cd ../desktop && npm install"
+  },
+  "keywords": [
+    "expense-tracking",
+    "cross-platform",
+    "react-native",
+    "electron"
+  ],
+  "author": "",
+  "license": "MIT",
+  "workspaces": [
+    "mobile",
+    "desktop",
+    "shared"
+  ]
+}
